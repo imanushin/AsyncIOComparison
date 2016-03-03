@@ -1,8 +1,5 @@
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace TestDnxApp
 {
@@ -14,9 +11,10 @@ namespace TestDnxApp
             
             try
             {
-                Console.WriteLine("Hello World");
+                var filesToTest = FilesLookup.FindFiles(100);
+                               
+                Console.WriteLine("Files to test: {0}", filesToTest.Length);
                 Console.WriteLine();
-                Console.Read();                            
             }   
             catch(Exception ex)
             {
