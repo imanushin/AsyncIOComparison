@@ -11,11 +11,19 @@ namespace TestDnxApp
     {
         public static FileInfo[] FindFiles(int maxCount)
         {
-            var rootFolder = new DirectoryInfo("/System/Library");
+            var rootFolders = GetRootFolderCandidates().Where(Directory.Exists).Select(dn=> new DirectoryInfo(dn));
             
-            Trace.TraceInformation("Root folder: {0}", rootFolder);
+            Trace.TraceInformation("Root folders: {0}", string.Join(";", rootFolders));
             
-            return rootFolder.EnumerateFiles("*", SearchOption.AllDirectories).Take(maxCount).ToArray();
+            return rootFolders
+                .SelectMany(rf=>rf.EnumerateFiles("*", SearchOption.AllDirectories))
+                .Take(maxCount)
+                .ToArray();
+        }
+        
+        private static string[] GetRootFolderCandidates()
+        {
+            return new [] {"/System/Library", "%windir%"};
         }
     }
 }
