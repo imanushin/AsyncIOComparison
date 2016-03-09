@@ -8,7 +8,7 @@ namespace TestsHost
 {
     internal static class FilesLookup
     {
-        public static FileInfo[] FindFiles(int maxCount)
+        public static ImmutableList<FileInfo> FindFiles(int maxCount)
         {
             var rootFolders = GetRootFolderCandidates()
                 .Where(Directory.Exists)
@@ -20,7 +20,7 @@ namespace TestsHost
             return rootFolders
                 .SelectMany(rf => rf.EnumerateFiles("*", SearchOption.AllDirectories))
                 .Take(maxCount)
-                .ToArray();
+                .ToImmutableList();
         }
 
         private static ImmutableList<string> GetRootFolderCandidates()

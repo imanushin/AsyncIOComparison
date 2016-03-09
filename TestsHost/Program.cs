@@ -1,5 +1,11 @@
 ﻿using System;
+using System.Collections.Immutable;
 using System.Diagnostics;
+using System.IO;
+using System.Linq;
+using System.Threading.Tasks;
+using CheckContracts;
+using IntermediateData;
 
 namespace TestsHost
 {
@@ -11,10 +17,7 @@ namespace TestsHost
             
             try
             {
-                var filesToTest = FilesLookup.FindFiles(100);
-                               
-                Console.WriteLine("Files to test: {0}", filesToTest.Length);
-                Console.WriteLine();
+                MainAsync().Wait();
             }   
             catch(Exception ex)
             {
@@ -24,6 +27,22 @@ namespace TestsHost
             }   
 
             return 0;
+        }
+
+        private static async Task MainAsync()
+        {
+            var filesToTest = FilesLookup.FindFiles(100);
+
+            await Console.Out.WriteLineAsync($"Files to test: {filesToTest.Count}").ConfigureAwait(false);
+            await Console.Out.WriteLineAsync().ConfigureAwait(false);
+
+            var exeFileName = Process.GetCurrentProcess().MainModule.FileName;
+            var currentFolder = Path.GetDirectoryName(exeFileName);
+            Validate.IsNotNull(currentFolder);
+            var filesListFile = Path.Combine(currentFolder, "filesToTest.json");
+            await FileNames.SaveToFileAsync(filesListFile,filesToTest.Select(fi => fi.FullName).ToImmutableList()).ConfigureAwait(false);
+
+            await Console.Out.WriteLineAsync("Tests done");
         }
     }
 }
