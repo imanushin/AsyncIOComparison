@@ -66,6 +66,9 @@ namespace TestsHost
 
             var scenarios = ImmutableList.Create(
                 "ScenarioAsyncWithMaxParallelCount4", 
+                "ScenarioAsyncWithMaxParallelCount8", 
+                "ScenarioAsyncWithMaxParallelCount16", 
+                "ScenarioAsyncWithMaxParallelCount32", 
                 "ScenarioSyncAsParallel", 
                 "ScenarioReadAllAsParallel", 
                 "ScenarioAsync", 
