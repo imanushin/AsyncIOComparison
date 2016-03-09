@@ -12,7 +12,7 @@ namespace IntermediateData
         }
 
         [JsonProperty]
-        public string[] Files { get; private set; }
+        public string[] Files { get; }
 
     }
 }

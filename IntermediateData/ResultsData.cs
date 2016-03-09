@@ -12,6 +12,6 @@ namespace IntermediateData
         }
 
         [JsonProperty]
-        public TimeSpan ExecutionTime { get; private set; }
+        public TimeSpan ExecutionTime { get; }
     }
 }

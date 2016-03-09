@@ -7,6 +7,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestsHost", "TestsHost\Test
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IntermediateData", "IntermediateData\IntermediateData.csproj", "{671FA580-CC30-48E9-A44C-B5B4D4124AEB}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ScenarioAsync", "ScenarioAsync\ScenarioAsync.csproj", "{6DF545D7-CF74-4A41-AD96-525E6BC64A5A}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -21,6 +23,10 @@ Global
 		{671FA580-CC30-48E9-A44C-B5B4D4124AEB}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{671FA580-CC30-48E9-A44C-B5B4D4124AEB}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{671FA580-CC30-48E9-A44C-B5B4D4124AEB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6DF545D7-CF74-4A41-AD96-525E6BC64A5A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6DF545D7-CF74-4A41-AD96-525E6BC64A5A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6DF545D7-CF74-4A41-AD96-525E6BC64A5A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6DF545D7-CF74-4A41-AD96-525E6BC64A5A}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
