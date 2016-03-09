@@ -25,7 +25,7 @@ namespace TestsHost
 
         private static ImmutableList<string> GetRootFolderCandidates()
         {
-            return new[] { "/System/Library", "%windir%" }
+            return new[] { "/System/Library", "%ProgramFiles%" }
             .Select(Environment.ExpandEnvironmentVariables)
             .ToImmutableList();
         }
