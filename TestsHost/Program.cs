@@ -46,11 +46,11 @@ namespace TestsHost
 
             var arguments = new Arguments(filesListFile, resultsFile);
 
-            var scenarios = ImmutableList.Create("ScenarioAsync");
+            var scenarios = ImmutableList.Create("ScenarioAsync", "ScenarioSyncAsParallel");
 
             foreach (var scenario in scenarios)
             {
-                var result = CheckScenario("ScenarioAsync", arguments);
+                var result = CheckScenario(scenario, arguments);
 
                 await Console.Out.WriteLineAsync($"{scenario} - {result.ExecutionTime.TotalSeconds} secs").ConfigureAwait(false);
             }

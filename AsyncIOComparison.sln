@@ -4,10 +4,16 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 VisualStudioVersion = 14.0.24720.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestsHost", "TestsHost\TestsHost.csproj", "{8B8E8509-4477-49CE-BC83-038C2AAF2277}"
+	ProjectSection(ProjectDependencies) = postProject
+		{039D9FBA-CF29-4852-A84A-B361A718CF4E} = {039D9FBA-CF29-4852-A84A-B361A718CF4E}
+		{6DF545D7-CF74-4A41-AD96-525E6BC64A5A} = {6DF545D7-CF74-4A41-AD96-525E6BC64A5A}
+	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IntermediateData", "IntermediateData\IntermediateData.csproj", "{671FA580-CC30-48E9-A44C-B5B4D4124AEB}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ScenarioAsync", "ScenarioAsync\ScenarioAsync.csproj", "{6DF545D7-CF74-4A41-AD96-525E6BC64A5A}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ScenarioSyncAsParallel", "ScenarioSyncAsParallel\ScenarioSyncAsParallel.csproj", "{039D9FBA-CF29-4852-A84A-B361A718CF4E}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -27,6 +33,10 @@ Global
 		{6DF545D7-CF74-4A41-AD96-525E6BC64A5A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{6DF545D7-CF74-4A41-AD96-525E6BC64A5A}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{6DF545D7-CF74-4A41-AD96-525E6BC64A5A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{039D9FBA-CF29-4852-A84A-B361A718CF4E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{039D9FBA-CF29-4852-A84A-B361A718CF4E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{039D9FBA-CF29-4852-A84A-B361A718CF4E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{039D9FBA-CF29-4852-A84A-B361A718CF4E}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
