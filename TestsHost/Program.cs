@@ -46,7 +46,9 @@ namespace TestsHost
 
             var arguments = new Arguments(filesListFile, resultsFile);
 
-            var scenarios = ImmutableList.Create("ScenarioAsync", "ScenarioSyncAsParallel");
+            var scenarios = ImmutableList.Create("ScenarioAsync", "ScenarioAsync2", "ScenarioSyncAsParallel", "ScenarioNewThread");
+
+            CheckScenario("ScenarioAsync", arguments); //warm system io caches
 
             foreach (var scenario in scenarios)
             {
