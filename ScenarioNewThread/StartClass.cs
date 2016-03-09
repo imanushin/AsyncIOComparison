@@ -14,9 +14,7 @@ namespace ScenarioNewThread
         {
             var arguments = Arguments.Parse(args);
 
-            PerformanceCheck.CheckPerformance(arguments, ProcessFiles);
-
-            return 0;
+            return PerformanceCheck.CheckPerformance(arguments, ProcessFiles);
         }
 
         private static int ProcessFiles(ImmutableList<string> filesList)

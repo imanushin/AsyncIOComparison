@@ -1,10 +1,9 @@
 ﻿using System.Collections.Immutable;
 using System.IO;
 using System.Linq;
-using System.Threading.Tasks;
 using IntermediateData;
 
-namespace ScenarioSyncAsParallel
+namespace ScenarioReadAllAsParallel
 {
     internal static class StartClass
     {
@@ -12,9 +11,7 @@ namespace ScenarioSyncAsParallel
         {
             var arguments = Arguments.Parse(args);
 
-            PerformanceCheck.CheckPerformance(arguments, ProcessFiles);
-
-            return 0;
+            return PerformanceCheck.CheckPerformance(arguments, ProcessFiles);
         }
 
         private static int ProcessFiles(ImmutableList<string> filesList)

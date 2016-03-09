@@ -71,15 +71,27 @@ namespace TestsHost
 
             foreach (var scenario in scenarios)
             {
-                var result = CheckScenario(scenario, arguments);
+                var testResult = CheckScenario(scenario, arguments);
+                var result = testResult.Item2;
 
-                await Console.Out.WriteLineAsync($"{scenario} - {result.ExecutionTime.TotalSeconds} secs").ConfigureAwait(false);
+                if (testResult.Item1 != ExitResult.Ok)
+                {
+                    await
+                        Console.Out.WriteLineAsync($"{scenario} - failed with {testResult.Item1} error")
+                            .ConfigureAwait(false);
+                }
+                else
+                {
+                    await
+                        Console.Out.WriteLineAsync($"{scenario} - {result.ExecutionTime.TotalSeconds} secs")
+                            .ConfigureAwait(false);
+                }
             }
 
             await Console.Out.WriteLineAsync().ConfigureAwait(false);
         }
 
-        private static ResultsData CheckScenario(string scenarioName, Arguments arguments)
+        private static Tuple<ExitResult, ResultsData> CheckScenario(string scenarioName, Arguments arguments)
         {
             var currentFolder = Path.GetDirectoryName(arguments.PathToFilesList);
             Validate.StringIsMeanful(currentFolder);
@@ -98,10 +110,19 @@ namespace TestsHost
                 Validate.IsNotNull(process);
 
                 process.WaitForExit();
+
+                switch (process.ExitCode)
+                {
+                    case 0:
+                        return new Tuple<ExitResult, ResultsData>(ExitResult.Ok, Serialization.LoadObjectAsync<ResultsData>(arguments.PathToResults).Result);
+
+                    case 1:
+                        return new Tuple<ExitResult, ResultsData>(ExitResult.OutOfMemory, null);
+
+                    default:
+                        return new Tuple<ExitResult, ResultsData>(ExitResult.UnknownException, null);
+                }
             }
-
-            return Serialization.LoadObjectAsync<ResultsData>(arguments.PathToResults).Result;
         }
-
     }
 }
