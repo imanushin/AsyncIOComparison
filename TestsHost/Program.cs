@@ -40,9 +40,11 @@ namespace TestsHost
             var currentFolder = Path.GetDirectoryName(exeFileName);
             Validate.IsNotNull(currentFolder);
             var filesListFile = Path.Combine(currentFolder, "filesToTest.json");
-            await FileNames.SaveToFileAsync(filesListFile,filesToTest.Select(fi => fi.FullName).ToImmutableList()).ConfigureAwait(false);
+            await FileNames.SaveFileListAsync(filesListFile,filesToTest.Select(fi => fi.FullName).ToImmutableList()).ConfigureAwait(false);
 
-            await Console.Out.WriteLineAsync("Tests done");
+            var resultsFile = Path.Combine(currentFolder, "results.json");
+
+            await Console.Out.WriteLineAsync("Tests done").ConfigureAwait(false);
         }
     }
 }

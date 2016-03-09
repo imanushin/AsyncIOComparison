@@ -57,8 +57,10 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="FileNames.cs" />
+    <Compile Include="Serialization.cs" />
     <Compile Include="FilesData.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="ResultsData.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
