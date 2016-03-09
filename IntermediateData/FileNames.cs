@@ -16,5 +16,14 @@ namespace IntermediateData
 
             await data.SaveObjectAsync(destination).ConfigureAwait(false);
         }
+
+        public static async Task<ImmutableList<string>> LoadFilesAsync(string pathToFilesList)
+        {
+            Validate.StringIsMeanful(pathToFilesList, nameof(pathToFilesList));
+
+            var data = await Serialization.LoadObjectAsync<FilesData>(pathToFilesList).ConfigureAwait(false);
+
+            return data.Files.ToImmutableList();
+        }
     }
 }

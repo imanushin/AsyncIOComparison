@@ -58,6 +58,7 @@
   <ItemGroup>
     <Compile Include="Arguments.cs" />
     <Compile Include="FileNames.cs" />
+    <Compile Include="PerformanceCheck.cs" />
     <Compile Include="Serialization.cs" />
     <Compile Include="FilesData.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
