@@ -5,9 +5,12 @@ VisualStudioVersion = 14.0.24720.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestsHost", "TestsHost\TestsHost.csproj", "{8B8E8509-4477-49CE-BC83-038C2AAF2277}"
 	ProjectSection(ProjectDependencies) = postProject
+		{84BDBF08-1DC4-4A9C-BBBD-21E7AA50EE2E} = {84BDBF08-1DC4-4A9C-BBBD-21E7AA50EE2E}
+		{DDFDF01C-A8B8-4183-89A7-EEC32BA93272} = {DDFDF01C-A8B8-4183-89A7-EEC32BA93272}
 		{435CD137-AD8A-461C-87F4-61CDB4354652} = {435CD137-AD8A-461C-87F4-61CDB4354652}
 		{B818373F-598B-41DD-8C82-A8B8CFF05DC7} = {B818373F-598B-41DD-8C82-A8B8CFF05DC7}
 		{6C22715B-49F6-4A38-9023-B0E3C2BB31C1} = {6C22715B-49F6-4A38-9023-B0E3C2BB31C1}
+		{8BBEE860-8DAC-41AB-8581-44DF425D492D} = {8BBEE860-8DAC-41AB-8581-44DF425D492D}
 		{DCEAD66D-B1BE-4DBB-820B-83E4A79005D5} = {DCEAD66D-B1BE-4DBB-820B-83E4A79005D5}
 		{380AD270-985D-41EE-93D3-559643CC4AC0} = {380AD270-985D-41EE-93D3-559643CC4AC0}
 		{27DEBAB3-C10D-433E-9980-7112FB927A20} = {27DEBAB3-C10D-433E-9980-7112FB927A20}
@@ -38,13 +41,22 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ScenarioAsyncWithMaxParalle
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ScenarioAsyncWithMaxParallelCount32", "ScenarioAsyncWithMaxParallelCount32\ScenarioAsyncWithMaxParallelCount32.csproj", "{27DEBAB3-C10D-433E-9980-7112FB927A20}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ScenarioAsyncWithMaxParallelCount64", "ScenarioAsyncWithMaxParallelCount64\ScenarioAsyncWithMaxParallelCount64.csproj", "{84BDBF08-1DC4-4A9C-BBBD-21E7AA50EE2E}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ScenarioAsyncWithMaxParallelCount128", "ScenarioAsyncWithMaxParallelCount128\ScenarioAsyncWithMaxParallelCount128.csproj", "{8BBEE860-8DAC-41AB-8581-44DF425D492D}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ScenarioAsyncWithMaxParallelCount256", "ScenarioAsyncWithMaxParallelCount256\ScenarioAsyncWithMaxParallelCount256.csproj", "{DDFDF01C-A8B8-4183-89A7-EEC32BA93272}"
+EndProject
 Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
 		ScenarioAsyncWithMaxParallelCount\ScenarioAsyncWithMaxParallelCount.projitems*{6c22715b-49f6-4a38-9023-b0e3c2bb31c1}*SharedItemsImports = 4
 		ScenarioAsyncWithMaxParallelCount\ScenarioAsyncWithMaxParallelCount.projitems*{27debab3-c10d-433e-9980-7112fb927a20}*SharedItemsImports = 4
+		ScenarioAsyncWithMaxParallelCount\ScenarioAsyncWithMaxParallelCount.projitems*{ddfdf01c-a8b8-4183-89a7-eec32ba93272}*SharedItemsImports = 4
+		ScenarioAsyncWithMaxParallelCount\ScenarioAsyncWithMaxParallelCount.projitems*{84bdbf08-1dc4-4a9c-bbbd-21e7aa50ee2e}*SharedItemsImports = 4
 		ScenarioAsyncWithMaxParallelCount\ScenarioAsyncWithMaxParallelCount.projitems*{380ad270-985d-41ee-93d3-559643cc4ac0}*SharedItemsImports = 4
 		ScenarioAsyncWithMaxParallelCount\ScenarioAsyncWithMaxParallelCount.projitems*{71dab955-3cb5-4eaa-bc80-7b204f513078}*SharedItemsImports = 13
 		ScenarioAsyncWithMaxParallelCount\ScenarioAsyncWithMaxParallelCount.projitems*{cc8d64b8-9882-4f72-97fb-6a6f91e76b89}*SharedItemsImports = 4
+		ScenarioAsyncWithMaxParallelCount\ScenarioAsyncWithMaxParallelCount.projitems*{8bbee860-8dac-41ab-8581-44df425d492d}*SharedItemsImports = 4
 	EndGlobalSection
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -95,6 +107,18 @@ Global
 		{27DEBAB3-C10D-433E-9980-7112FB927A20}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{27DEBAB3-C10D-433E-9980-7112FB927A20}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{27DEBAB3-C10D-433E-9980-7112FB927A20}.Release|Any CPU.Build.0 = Release|Any CPU
+		{84BDBF08-1DC4-4A9C-BBBD-21E7AA50EE2E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{84BDBF08-1DC4-4A9C-BBBD-21E7AA50EE2E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{84BDBF08-1DC4-4A9C-BBBD-21E7AA50EE2E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{84BDBF08-1DC4-4A9C-BBBD-21E7AA50EE2E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8BBEE860-8DAC-41AB-8581-44DF425D492D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8BBEE860-8DAC-41AB-8581-44DF425D492D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8BBEE860-8DAC-41AB-8581-44DF425D492D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8BBEE860-8DAC-41AB-8581-44DF425D492D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DDFDF01C-A8B8-4183-89A7-EEC32BA93272}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DDFDF01C-A8B8-4183-89A7-EEC32BA93272}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DDFDF01C-A8B8-4183-89A7-EEC32BA93272}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DDFDF01C-A8B8-4183-89A7-EEC32BA93272}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

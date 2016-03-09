@@ -1,4 +1,5 @@
-﻿using System.Collections.Immutable;
+﻿using System;
+using System.Collections.Immutable;
 using System.IO;
 using System.Linq;
 using System.Management.Instrumentation;
@@ -19,13 +20,23 @@ namespace ScenarioAsync2
 #if MAX_PARALLEL_16
         private const int MaxParallelReads = 16;
 #else
-        private const int MaxParallelReads = 32;
+#if MAX_PARALLEL_32
+        private const int MaxParallelReads = 64;
+#else
+#if MAX_PARALLEL_64
+        private const int MaxParallelReads = 128;
+#else
+        private const int MaxParallelReads = 256;
+#endif
+#endif
 #endif
 #endif
 #endif
 
         private static int Main(string[] args)
         {
+            Console.Out.WriteLine("Parallel reads - {0}", MaxParallelReads);
+
             var arguments = Arguments.Parse(args);
 
             return PerformanceCheck.CheckPerformance(arguments, ProcessFiles);
