@@ -29,7 +29,7 @@ namespace TestsHost
 
         private static ImmutableList<string> GetRootFolderCandidates()
         {
-            return new[] { "/System/Library", "%ProgramFiles%" }
+            return new[] { "/System/Library", "%ProgramFiles%", "%windir%" }
             .Select(Environment.ExpandEnvironmentVariables)
             .ToImmutableList();
         }
@@ -40,7 +40,13 @@ namespace TestsHost
 
             try
             {
-                files.AddRange(Directory.GetFiles(path, "*", SearchOption.TopDirectoryOnly).Select(f => new FileInfo(f)));
+                files.AddRange(
+                    Directory.GetFiles(path, "*", SearchOption.TopDirectoryOnly)
+                        .AsParallel()
+                        .Select(f => new FileInfo(f))
+                        .Where(f => f.Exists)
+                        .Where(CanBeOpened));
+
                 foreach (var directory in Directory.GetDirectories(path))
                 {
                     files.AddRange(GetFiles(directory));
@@ -49,6 +55,20 @@ namespace TestsHost
             catch (UnauthorizedAccessException) { }
 
             return files.ToImmutable();
+        }
+
+        private static bool CanBeOpened(FileInfo fileInfo)
+        {
+            try
+            {
+                fileInfo.OpenRead().Dispose();
+
+                return true;
+            }
+            catch (Exception)
+            {
+                return false;
+            }
         }
     }
 }
