@@ -31,22 +31,41 @@ namespace TestsHost
 
         private static async Task MainAsync()
         {
-            var filesToTest = FilesLookup.FindFiles(1000);
+            foreach (var sizeDegree in Enumerable.Range(0, 7))
+            {
+                var size = (int)Math.Pow(10, sizeDegree);
 
-            await Console.Out.WriteLineAsync($"Files to test: {filesToTest.Count}").ConfigureAwait(false);
+                await CheckFilesAsync(size).ConfigureAwait(false);
+            }
+
+            await Console.Out.WriteLineAsync("Tests done").ConfigureAwait(false);
+        }
+
+        private static async Task CheckFilesAsync(int minFileSize)
+        {
+            var filesToTest = FilesLookup.FindFiles(10000, minFileSize);
+
+            var minSize = filesToTest.Select(f => f.Length).Min();
+            var maxSize = filesToTest.Select(f => f.Length).Max();
+            var avgSize = filesToTest.Select(f => f.Length).Average();
+
+            await Console.Out.WriteLineAsync($"Files to test: {filesToTest.Count}, min size - {minSize} bytes, max size - {maxSize}, average size - {avgSize}").ConfigureAwait(false);
             await Console.Out.WriteLineAsync().ConfigureAwait(false);
 
             var exeFileName = Process.GetCurrentProcess().MainModule.FileName;
             var currentFolder = Path.GetDirectoryName(exeFileName);
             Validate.IsNotNull(currentFolder);
             var filesListFile = Path.Combine(currentFolder, "filesToTest.json");
-            await FileNames.SaveFileListAsync(filesListFile, filesToTest.Select(fi => fi.FullName).ToImmutableList()).ConfigureAwait(false);
+            await
+                FileNames.SaveFileListAsync(filesListFile, filesToTest.Select(fi => fi.FullName).ToImmutableList())
+                    .ConfigureAwait(false);
 
             var resultsFile = Path.Combine(currentFolder, "results.json");
 
             var arguments = new Arguments(filesListFile, resultsFile);
 
-            var scenarios = ImmutableList.Create("ScenarioAsync", "ScenarioAsync2", "ScenarioSyncAsParallel", "ScenarioNewThread");
+            var scenarios = ImmutableList.Create("ScenarioSyncAsParallel", "ScenarioAsync", "ScenarioAsync2",
+                "ScenarioNewThread");
 
             CheckScenario("ScenarioAsync", arguments); //warm system io caches
 
@@ -57,7 +76,7 @@ namespace TestsHost
                 await Console.Out.WriteLineAsync($"{scenario} - {result.ExecutionTime.TotalSeconds} secs").ConfigureAwait(false);
             }
 
-            await Console.Out.WriteLineAsync("Tests done").ConfigureAwait(false);
+            await Console.Out.WriteLineAsync().ConfigureAwait(false);
         }
 
         private static ResultsData CheckScenario(string scenarioName, Arguments arguments)

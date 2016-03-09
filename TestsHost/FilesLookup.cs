@@ -8,7 +8,7 @@ namespace TestsHost
 {
     internal static class FilesLookup
     {
-        public static ImmutableList<FileInfo> FindFiles(int maxCount)
+        public static ImmutableList<FileInfo> FindFiles(int maxCount, int minLength = 0)
         {
             var rootFolders = GetRootFolderCandidates()
                 .Where(Directory.Exists)
@@ -18,7 +18,7 @@ namespace TestsHost
             Trace.TraceInformation("Root folders: {0}", string.Join(";", rootFolders));
 
             return rootFolders
-                .SelectMany(rf => rf.EnumerateFiles("*", SearchOption.AllDirectories))
+                .SelectMany(rf => rf.EnumerateFiles("*", SearchOption.AllDirectories).Where(fi => fi.Length > minLength))
                 .Take(maxCount)
                 .ToImmutableList();
         }
