@@ -1,9 +1,9 @@
 using System;
 using System.Diagnostics;
 
-namespace TestDnxApp
+namespace TestComparer
 {
-    public class Program
+    internal static class Program
     {
         public static int Main(string[] args)
         {
