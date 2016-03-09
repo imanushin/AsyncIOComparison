@@ -7,6 +7,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestsHost", "TestsHost\Test
 	ProjectSection(ProjectDependencies) = postProject
 		{435CD137-AD8A-461C-87F4-61CDB4354652} = {435CD137-AD8A-461C-87F4-61CDB4354652}
 		{B818373F-598B-41DD-8C82-A8B8CFF05DC7} = {B818373F-598B-41DD-8C82-A8B8CFF05DC7}
+		{6C22715B-49F6-4A38-9023-B0E3C2BB31C1} = {6C22715B-49F6-4A38-9023-B0E3C2BB31C1}
 		{DCEAD66D-B1BE-4DBB-820B-83E4A79005D5} = {DCEAD66D-B1BE-4DBB-820B-83E4A79005D5}
 		{039D9FBA-CF29-4852-A84A-B361A718CF4E} = {039D9FBA-CF29-4852-A84A-B361A718CF4E}
 		{6DF545D7-CF74-4A41-AD96-525E6BC64A5A} = {6DF545D7-CF74-4A41-AD96-525E6BC64A5A}
@@ -24,7 +25,15 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ScenarioAsync2", "ScenarioA
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ScenarioReadAllAsParallel", "ScenarioReadAllAsParallel\ScenarioReadAllAsParallel.csproj", "{B818373F-598B-41DD-8C82-A8B8CFF05DC7}"
 EndProject
+Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "ScenarioAsyncWithMaxParallelCount", "ScenarioAsyncWithMaxParallelCount\ScenarioAsyncWithMaxParallelCount.shproj", "{71DAB955-3CB5-4EAA-BC80-7B204F513078}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ScenarioAsyncWithMaxParallelCount4", "ScenarioAsyncWithMaxParallelCount4\ScenarioAsyncWithMaxParallelCount4.csproj", "{6C22715B-49F6-4A38-9023-B0E3C2BB31C1}"
+EndProject
 Global
+	GlobalSection(SharedMSBuildProjectFiles) = preSolution
+		ScenarioAsyncWithMaxParallelCount\ScenarioAsyncWithMaxParallelCount.projitems*{6c22715b-49f6-4a38-9023-b0e3c2bb31c1}*SharedItemsImports = 4
+		ScenarioAsyncWithMaxParallelCount\ScenarioAsyncWithMaxParallelCount.projitems*{71dab955-3cb5-4eaa-bc80-7b204f513078}*SharedItemsImports = 13
+	EndGlobalSection
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
 		Release|Any CPU = Release|Any CPU
@@ -58,6 +67,10 @@ Global
 		{B818373F-598B-41DD-8C82-A8B8CFF05DC7}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B818373F-598B-41DD-8C82-A8B8CFF05DC7}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{B818373F-598B-41DD-8C82-A8B8CFF05DC7}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6C22715B-49F6-4A38-9023-B0E3C2BB31C1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6C22715B-49F6-4A38-9023-B0E3C2BB31C1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6C22715B-49F6-4A38-9023-B0E3C2BB31C1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6C22715B-49F6-4A38-9023-B0E3C2BB31C1}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

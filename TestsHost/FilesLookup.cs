@@ -19,7 +19,7 @@ namespace TestsHost
 
         public static ImmutableList<FileInfo> FindFiles(int maxCount, int minLength = 0)
         {
-            Trace.TraceInformation("Root folders: {0}", string.Join(";", RootFolders));
+            Trace.TraceInformation("Root folders: {0}; total files: {1}", string.Join(";", RootFolders), PreparedFiles.Count);
 
             return PreparedFiles
                 .Where(fi => fi.Length >= minLength)
@@ -50,6 +50,11 @@ namespace TestsHost
                 foreach (var directory in Directory.GetDirectories(path))
                 {
                     files.AddRange(GetFiles(directory));
+
+                    if (files.Count > 1000000)
+                    {
+                        break;
+                    }
                 }
             }
             catch (UnauthorizedAccessException) { }
