@@ -1,7 +1,7 @@
-using System;
+﻿using System;
 using System.Diagnostics;
 
-namespace TestComparer
+namespace TestsHost
 {
     internal static class Program
     {
