@@ -21,12 +21,16 @@ namespace ScenarioAsync2
         private const int MaxParallelReads = 16;
 #else
 #if MAX_PARALLEL_32
-        private const int MaxParallelReads = 64;
+        private const int MaxParallelReads = 32;
 #else
 #if MAX_PARALLEL_64
+        private const int MaxParallelReads = 64;
+#else
+#if MAX_PARALLEL_128
         private const int MaxParallelReads = 128;
 #else
         private const int MaxParallelReads = 256;
+#endif
 #endif
 #endif
 #endif
