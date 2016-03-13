@@ -64,6 +64,11 @@ namespace TestsHost
         {
             var filesToTest = FilesLookup.FindFiles(FilesCount, minFileSize);
 
+            if (!filesToTest.Any())
+            {
+                return;
+            }
+
             var minSize = filesToTest.Select(f => f.Length).Min();
             var maxSize = filesToTest.Select(f => f.Length).Max();
             var avgSize = filesToTest.Select(f => f.Length).Average();
