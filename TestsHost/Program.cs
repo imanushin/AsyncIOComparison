@@ -44,12 +44,11 @@ namespace TestsHost
                 using (var resultsStream = new StreamWriter(resultsFile))
                 {
                     await resultsStream.WriteLineAsync($"**Check {FilesCount} files to read**").ConfigureAwait(false);
+                    await resultsStream.WriteLineAsync("").ConfigureAwait(false);
 
-                    foreach (var sizeDegree in Enumerable.Range(0, 7))
+                    foreach (var sizeDegree in new [] {0, 3, 5, 6, 7, 8, 9})
                     {
                         var size = (int)Math.Pow(10, sizeDegree);
-
-                        await resultsStream.WriteLineAsync($"Min file size (bytes): {size}").ConfigureAwait(false);
 
                         await CheckFilesAsync(size, resultsStream).ConfigureAwait(false);
                     }
@@ -63,9 +62,6 @@ namespace TestsHost
 
         private static async Task CheckFilesAsync(int minFileSize, StreamWriter resultsStream)
         {
-            await resultsStream.WriteLineAsync("| Scenario | Time | CPU usage (%) | Memory usage (Mb) | Was failed |").ConfigureAwait(false);
-            await resultsStream.WriteLineAsync("| -------- | -------- | -------- | -------- | -------- |").ConfigureAwait(false);
-
             var filesToTest = FilesLookup.FindFiles(FilesCount, minFileSize);
 
             var minSize = filesToTest.Select(f => f.Length).Min();
@@ -74,6 +70,12 @@ namespace TestsHost
 
             await Console.Out.WriteLineAsync($"Files to test: {filesToTest.Count}, min size - {minSize} bytes, max size - {maxSize}, average size - {avgSize}").ConfigureAwait(false);
             await Console.Out.WriteLineAsync().ConfigureAwait(false);
+
+            await resultsStream.WriteLineAsync($"*Min size (bytes): {minSize} bytes, max size (bytes): {maxSize}, average size (bytes): {avgSize}*").ConfigureAwait(false);
+            await resultsStream.WriteLineAsync().ConfigureAwait(false);
+
+            await resultsStream.WriteLineAsync("| Scenario | Time | CPU usage (%) | Memory usage (Mb) | Was failed |").ConfigureAwait(false);
+            await resultsStream.WriteLineAsync("| -------- | -------- | -------- | -------- | -------- |").ConfigureAwait(false);
 
             var exeFileName = Process.GetCurrentProcess().MainModule.FileName;
             var currentFolder = Path.GetDirectoryName(exeFileName);
@@ -210,13 +212,20 @@ namespace TestsHost
                         break;
 
                     case 1:
-                        exitResult = ExitResult.Ok;
+                        exitResult = ExitResult.OutOfMemory;
                         break;
 
 
                     default:
-                        exitResult = ExitResult.Ok;
+                        exitResult = ExitResult.UnknownException;
                         break;
+                }
+
+                var fileExists = File.Exists(arguments.PathToResults);
+
+                if (!fileExists && exitResult == ExitResult.Ok)
+                {
+                    exitResult = ExitResult.UnknownException;
                 }
 
                 var data = exitResult == ExitResult.Ok

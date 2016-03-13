@@ -40,12 +40,24 @@ namespace TestsHost
                 yield return file;
             }
 
-            foreach (var directory in Directory.GetDirectories(path))
+            foreach (var directory in GetDirectoriesSafe(path))
             {
                 foreach (var file in GetFiles(directory, minLength))
                 {
                     yield return file;
                 }
+            }
+        }
+
+        private static string[] GetDirectoriesSafe(string path)
+        {
+            try
+            {
+                return Directory.GetDirectories(path);
+            }
+            catch (Exception)
+            {
+                return new string[0];
             }
         }
 
