@@ -13,6 +13,7 @@ namespace TestsHost
 {
     internal static class Program
     {
+        private static readonly int FilesCount = 10000;
         private const int AttemptsCount = 5;
 
         public static int Main()
@@ -42,10 +43,13 @@ namespace TestsHost
             {
                 using (var resultsStream = new StreamWriter(resultsFile))
                 {
+                    await resultsStream.WriteLineAsync($"**Check {FilesCount} files to read**").ConfigureAwait(false);
 
                     foreach (var sizeDegree in Enumerable.Range(0, 7))
                     {
                         var size = (int)Math.Pow(10, sizeDegree);
+
+                        await resultsStream.WriteLineAsync($"Min file size (bytes): {size}").ConfigureAwait(false);
 
                         await CheckFilesAsync(size, resultsStream).ConfigureAwait(false);
                     }
@@ -59,10 +63,10 @@ namespace TestsHost
 
         private static async Task CheckFilesAsync(int minFileSize, StreamWriter resultsStream)
         {
-            await resultsStream.WriteLineAsync("| Time | CPU usage (%) | Memory usage (b) | Was failed |").ConfigureAwait(false);
-            await resultsStream.WriteLineAsync("| -------- | -------- | -------- | -------- |").ConfigureAwait(false);
-            
-            var filesToTest = FilesLookup.FindFiles(10000, minFileSize);
+            await resultsStream.WriteLineAsync("| Scenario | Time | CPU usage (%) | Memory usage (Mb) | Was failed |").ConfigureAwait(false);
+            await resultsStream.WriteLineAsync("| -------- | -------- | -------- | -------- | -------- |").ConfigureAwait(false);
+
+            var filesToTest = FilesLookup.FindFiles(FilesCount, minFileSize);
 
             var minSize = filesToTest.Select(f => f.Length).Min();
             var maxSize = filesToTest.Select(f => f.Length).Max();
@@ -107,10 +111,12 @@ namespace TestsHost
                 var aggregatedResult = AggregateResult(multipleRunResults);
                 var testResult = CheckScenario(scenario, arguments);
 
-                await resultsStream.WriteLineAsync($"| {aggregatedResult.ExecutionTime} | {aggregatedResult.AverageProcessorTime} | {aggregatedResult.AverageMemoryUsage} | {aggregatedResult.WasFailed} |").ConfigureAwait(false);
+                await resultsStream.WriteLineAsync($"| {scenario} | {aggregatedResult.ExecutionTime} | {aggregatedResult.AverageProcessorTime} | {aggregatedResult.AverageMemoryUsage / 10000000} | {aggregatedResult.WasFailed} |").ConfigureAwait(false);
 
                 await WriteScenarioResultsAsync(testResult, scenario).ConfigureAwait(false);
             }
+
+            await resultsStream.WriteLineAsync().ConfigureAwait(false);
 
             await Console.Out.WriteLineAsync().ConfigureAwait(false);
         }
@@ -182,6 +188,8 @@ namespace TestsHost
 
                 var cpuValues = new List<float>();
                 var memValues = new List<float>();
+
+                Thread.Sleep(500);
 
                 while (!process.HasExited)
                 {

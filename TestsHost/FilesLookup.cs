@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 
@@ -14,15 +13,10 @@ namespace TestsHost
             .Select(dn => new DirectoryInfo(dn))
             .ToImmutableList();
 
-        private static readonly ImmutableList<FileInfo> PreparedFiles =
-            RootFolders.SelectMany(f => GetFiles(f.FullName)).ToImmutableList();
-
         public static ImmutableList<FileInfo> FindFiles(int maxCount, int minLength = 0)
         {
-            Trace.TraceInformation("Root folders: {0}; total files: {1}", string.Join(";", RootFolders), PreparedFiles.Count);
-
-            return PreparedFiles
-                .Where(fi => fi.Length >= minLength)
+            return RootFolders
+                .SelectMany(f => GetFiles(f.FullName, minLength))
                 .Take(maxCount)
                 .ToImmutableList();
         }
@@ -34,32 +28,37 @@ namespace TestsHost
             .ToImmutableList();
         }
 
-        private static ImmutableList<FileInfo> GetFiles(string path)
+        private static IEnumerable<FileInfo> GetFiles(string path, int minLength = 0)
         {
-            var files = ImmutableList<FileInfo>.Empty.ToBuilder();
 
-            try
+            foreach (var file in GetFilesSafe(path)
+                    .AsParallel()
+                    .Select(f => new FileInfo(f))
+                    .Where(f => f.Exists && f.Length > minLength)
+                    .Where(CanBeOpened))
             {
-                files.AddRange(
-                    Directory.GetFiles(path, "*", SearchOption.TopDirectoryOnly)
-                        .AsParallel()
-                        .Select(f => new FileInfo(f))
-                        .Where(f => f.Exists)
-                        .Where(CanBeOpened));
+                yield return file;
+            }
 
-                foreach (var directory in Directory.GetDirectories(path))
+            foreach (var directory in Directory.GetDirectories(path))
+            {
+                foreach (var file in GetFiles(directory, minLength))
                 {
-                    files.AddRange(GetFiles(directory));
-
-                    if (files.Count > 1000000)
-                    {
-                        break;
-                    }
+                    yield return file;
                 }
             }
-            catch (UnauthorizedAccessException) { }
+        }
 
-            return files.ToImmutable();
+        private static string[] GetFilesSafe(string path)
+        {
+            try
+            {
+                return Directory.GetFiles(path, "*", SearchOption.TopDirectoryOnly);
+            }
+            catch (Exception)
+            {
+                return new string[0];
+            }
         }
 
         private static bool CanBeOpened(FileInfo fileInfo)
