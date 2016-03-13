@@ -1,8 +1,10 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using CheckContracts;
 using IntermediateData;
@@ -11,7 +13,7 @@ namespace TestsHost
 {
     internal static class Program
     {
-        public static int Main(string[] args)
+        public static int Main()
         {
             Trace.Listeners.Add(new ConsoleTraceListener());
 
@@ -31,14 +33,22 @@ namespace TestsHost
 
         private static async Task MainAsync()
         {
-            foreach (var sizeDegree in Enumerable.Range(0, 7))
+            var outDir = Environment.CurrentDirectory;
+            var outFile = Path.Combine(outDir, "results_") + DateTime.UtcNow.Ticks + ".md";
+
+            using (var file = File.Open(outFile, FileMode.Create))
             {
-                var size = (int)Math.Pow(10, sizeDegree);
 
-                await CheckFilesAsync(size).ConfigureAwait(false);
+                foreach (var sizeDegree in Enumerable.Range(0, 7))
+                {
+                    var size = (int)Math.Pow(10, sizeDegree);
+
+                    await CheckFilesAsync(size).ConfigureAwait(false);
+                }
+
+                await file.FlushAsync().ConfigureAwait(false);
+                await Console.Out.WriteLineAsync("Tests done").ConfigureAwait(false);
             }
-
-            await Console.Out.WriteLineAsync("Tests done").ConfigureAwait(false);
         }
 
         private static async Task CheckFilesAsync(int minFileSize)
@@ -65,16 +75,16 @@ namespace TestsHost
             var arguments = new Arguments(filesListFile, resultsFile);
 
             var scenarios = ImmutableList.Create(
-                "ScenarioAsyncWithMaxParallelCount4", 
-                "ScenarioAsyncWithMaxParallelCount8", 
-                "ScenarioAsyncWithMaxParallelCount16", 
-                "ScenarioAsyncWithMaxParallelCount32", 
-                "ScenarioAsyncWithMaxParallelCount64", 
-                "ScenarioAsyncWithMaxParallelCount128", 
-                "ScenarioAsyncWithMaxParallelCount256", 
-                "ScenarioSyncAsParallel", 
-                "ScenarioReadAllAsParallel", 
-                "ScenarioAsync", 
+                "ScenarioAsyncWithMaxParallelCount4",
+                "ScenarioAsyncWithMaxParallelCount8",
+                "ScenarioAsyncWithMaxParallelCount16",
+                "ScenarioAsyncWithMaxParallelCount32",
+                "ScenarioAsyncWithMaxParallelCount64",
+                "ScenarioAsyncWithMaxParallelCount128",
+                "ScenarioAsyncWithMaxParallelCount256",
+                "ScenarioSyncAsParallel",
+                "ScenarioReadAllAsParallel",
+                "ScenarioAsync",
                 "ScenarioAsync2",
                 "ScenarioNewThread");
 
@@ -83,18 +93,20 @@ namespace TestsHost
             foreach (var scenario in scenarios)
             {
                 var testResult = CheckScenario(scenario, arguments);
-                var result = testResult.Item2;
+                var result = testResult.Data;
+                var cpuData = GetMinAvgMax(testResult.ProcessorTime);
+                var memData = GetMinAvgMax(testResult.MemoryUsage);
 
-                if (testResult.Item1 != ExitResult.Ok)
+                if (testResult.ExitResult != ExitResult.Ok)
                 {
                     await
-                        Console.Out.WriteLineAsync($"{scenario} - failed with {testResult.Item1} error")
+                        Console.Out.WriteLineAsync($"{scenario} - failed with {testResult.ExitResult} error")
                             .ConfigureAwait(false);
                 }
                 else
                 {
                     await
-                        Console.Out.WriteLineAsync($"{scenario} - {result.ExecutionTime.TotalSeconds} secs")
+                        Console.Out.WriteLineAsync($"{scenario} - {result.ExecutionTime.TotalSeconds} secs; cpu - {cpuData}, memory - {memData}")
                             .ConfigureAwait(false);
                 }
             }
@@ -102,7 +114,16 @@ namespace TestsHost
             await Console.Out.WriteLineAsync().ConfigureAwait(false);
         }
 
-        private static Tuple<ExitResult, ResultsData> CheckScenario(string scenarioName, Arguments arguments)
+        private static string GetMinAvgMax(ImmutableList<float> data)
+        {
+            var min = data.Min();
+            var max = data.Max();
+            var avg = data.Average();
+
+            return $"{min}/{avg}/{max}";
+        }
+
+        private static TestResult CheckScenario(string scenarioName, Arguments arguments)
         {
             var currentFolder = Path.GetDirectoryName(arguments.PathToFilesList);
             Validate.StringIsMeanful(currentFolder);
@@ -120,19 +141,45 @@ namespace TestsHost
             {
                 Validate.IsNotNull(process);
 
+                var theCpuCounter = new PerformanceCounter("Process", "% Processor Time", process.ProcessName);
+                var theMemCounter = new PerformanceCounter("Process", "Working Set", process.ProcessName);
+
+                var cpuValues = new List<float>();
+                var memValues = new List<float>();
+
+                while (!process.HasExited)
+                {
+                    cpuValues.Add(theCpuCounter.NextValue());
+                    memValues.Add(theMemCounter.NextValue());
+
+                    Thread.Sleep(1000);
+                }
+
                 process.WaitForExit();
+
+                ExitResult exitResult;
 
                 switch (process.ExitCode)
                 {
                     case 0:
-                        return new Tuple<ExitResult, ResultsData>(ExitResult.Ok, Serialization.LoadObjectAsync<ResultsData>(arguments.PathToResults).Result);
+                        exitResult = ExitResult.Ok;
+                        break;
 
                     case 1:
-                        return new Tuple<ExitResult, ResultsData>(ExitResult.OutOfMemory, null);
+                        exitResult = ExitResult.Ok;
+                        break;
+
 
                     default:
-                        return new Tuple<ExitResult, ResultsData>(ExitResult.UnknownException, null);
+                        exitResult = ExitResult.Ok;
+                        break;
                 }
+
+                var data = exitResult == ExitResult.Ok
+                    ? Serialization.LoadObjectAsync<ResultsData>(arguments.PathToResults).Result
+                    : null;
+
+                return new TestResult(exitResult, data, cpuValues.ToImmutableList(), memValues.ToImmutableList());
             }
         }
     }
