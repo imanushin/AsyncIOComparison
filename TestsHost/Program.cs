@@ -46,7 +46,7 @@ namespace TestsHost
                     await resultsStream.WriteLineAsync($"**Check {FilesCount} files to read**").ConfigureAwait(false);
                     await resultsStream.WriteLineAsync("").ConfigureAwait(false);
 
-                    foreach (var sizeDegree in new [] {0, 3, 5, 6, 7, 8, 9})
+                    foreach (var sizeDegree in new[] { 0, 3, 5, 6, 7, 8, 9 })
                     {
                         var size = (int)Math.Pow(10, sizeDegree);
 
@@ -203,30 +203,7 @@ namespace TestsHost
 
                 process.WaitForExit();
 
-                ExitResult exitResult;
-
-                switch (process.ExitCode)
-                {
-                    case 0:
-                        exitResult = ExitResult.Ok;
-                        break;
-
-                    case 1:
-                        exitResult = ExitResult.OutOfMemory;
-                        break;
-
-
-                    default:
-                        exitResult = ExitResult.UnknownException;
-                        break;
-                }
-
-                var fileExists = File.Exists(arguments.PathToResults);
-
-                if (!fileExists && exitResult == ExitResult.Ok)
-                {
-                    exitResult = ExitResult.UnknownException;
-                }
+                var exitResult = GetExitResult(arguments, process);
 
                 var data = exitResult == ExitResult.Ok
                     ? Serialization.LoadObjectAsync<ResultsData>(arguments.PathToResults).Result
@@ -234,6 +211,26 @@ namespace TestsHost
 
                 return new TestResult(exitResult, data, cpuValues.ToImmutableList(), memValues.ToImmutableList());
             }
+        }
+
+        private static ExitResult GetExitResult(Arguments arguments, Process process)
+        {
+            switch (process.ExitCode)
+            {
+                case 0:
+                    break;
+
+                case 1:
+                    return ExitResult.OutOfMemory;
+
+
+                default:
+                    return ExitResult.UnknownException;
+            }
+
+            var fileExists = File.Exists(arguments.PathToResults);
+
+            return !fileExists ? ExitResult.UnknownException : ExitResult.Ok;
         }
     }
 }
