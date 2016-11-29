@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using CheckContracts;
 
@@ -9,30 +10,34 @@ namespace TestsHost
 {
     internal sealed class ProcessAnalyzer : IDisposable
     {
-        private static readonly Tuple<string, string, string, string, double>[] AllCounters =
-        {
-            Tuple.Create(".NET CLR Memory", "# Bytes in all Heaps", "Total .Net Memory", "Mb", 1e6)
-        };
-        /*
-         * 
-         ".NET CLR Memory" "# Bytes in all Heaps"
-".NET CLR LocksAndThreads" "Concurent Queue Length"
-".NET CLR LocksAndThreads" "# of current logical Threads"
-"LogicalDisc" "# Disk Read Time"
-"LogicalDisc" "Disk Read Bytes/sec"
-"LogicalDisc" "Current Disk Queue Length"
-"LogicalDisc" "Split IO/Sec"
-"Process" "IO Read Bytes/sec"
-"Process" "Page Faults/sec"
-"Process" "Thread Count"
-"Process" "% Processor Time"
-"Memory" "Available MBytes"
-         */
-        private static readonly ImmutableDictionary<string, string> CounterToAppendix =
-            AllCounters.ToImmutableDictionary(cn => cn.Item3, cn => cn.Item4);
+        private static readonly string MainDiskName =
+            Path.GetPathRoot(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles)).Substring(0, 2);
 
-        private static readonly ImmutableDictionary<string, double> CounterToMultiplier =
-            AllCounters.ToImmutableDictionary(cn => cn.Item3, cn => cn.Item5);
+        private static readonly ImmutableHashSet<string> CounterCategories= PerformanceCounterCategory
+                .GetCategories()
+                .Select(c => c.CategoryName)
+                .ToImmutableHashSet();
+
+        private static readonly string CounterCategoriesList = string.Join(", ", CounterCategories);
+
+        private static readonly PerformanceCounterData[] AllCounters =
+        {
+            PerformanceCounterData.Create(".NET CLR Memory", "# Bytes in all Heaps", "Total .Net Memory", "Mb", 1e6, GetProcessName),
+            PerformanceCounterData.Create(".NET CLR LocksAndThreads", "Current Queue Length", "Current lock Queue", "Length", 1d, GetProcessName),
+            PerformanceCounterData.Create(".NET CLR LocksAndThreads", "# of current logical Threads", "Concurrent Threads", "", 1d, GetProcessName),
+            PerformanceCounterData.Create("LogicalDisc", "% Disk Read Time", "Disk Read Time", "", 1d, GetActiveDiskName),
+            PerformanceCounterData.Create("LogicalDisc", "Disk Read Bytes/sec", "Disk Read", "Kb / sec", 1e3, GetActiveDiskName),
+            PerformanceCounterData.Create("LogicalDisc", "Current Disk Queue Length", "Current Disk Queue", "Length", 1d, GetActiveDiskName),
+            PerformanceCounterData.Create("LogicalDisc", "Split IO/Sec", "Disk Queue Length", "Count", 1d, GetActiveDiskName),
+            PerformanceCounterData.Create("Process", "IO Read Bytes/sec", "IO Read", "KBytes/sec", 1e3, GetProcessName),
+            PerformanceCounterData.Create("Process", "Page Faults/sec", "Page Faults", "Faults/sec", 1d, GetProcessName),
+            PerformanceCounterData.Create("Process", "Thread Count", "Threads", "Count", 1d, GetProcessName),
+            PerformanceCounterData.Create("Process", "% Processor Time", "CPU Load", "%", 1d, GetProcessName),
+            PerformanceCounterData.Create("Memory", "Available MBytes", "Available MBytes", "Mb", 1d, GetMemoryInstanceName),
+        };
+
+        private static readonly ImmutableDictionary<string, PerformanceCounterData> NameToCounter =
+            AllCounters.ToImmutableDictionary(cn => cn.TableTitleName, cn => cn);
 
         private readonly Process _process;
 
@@ -42,20 +47,53 @@ namespace TestsHost
         public ProcessAnalyzer(Process process)
         {
             _process = process;
-            _counters = AllCounters.ToDictionary(cn => cn.Item3, cn => CreateCounter(cn.Item1, cn.Item2, process));
+            _counters = AllCounters.ToDictionary(cn => cn.TableTitleName, cn => CreateCounter(cn, process));
             _values = _counters.Keys.ToDictionary(c => c, c => new List<long>());
         }
 
-        private PerformanceCounter CreateCounter(string categoryName, string counterName, Process process)
+        private static string GetProcessName(Process process)
+        {
+            return process.ProcessName;
+        }
+
+        private static string GetActiveDiskName(Process process)
+        {
+            return MainDiskName;
+        }
+
+        private static string GetMemoryInstanceName(Process process)
+        {
+            return null;
+        }
+
+        private PerformanceCounter CreateCounter(PerformanceCounterData counterData, Process process)
         {
             Validate.ArgumentCondition(!process.HasExited, nameof(process), "Process {0} was exited", process.ProcessName);
+
+            var categories = PerformanceCounterCategory
+                .GetCategories()
+                .Select(c => c.CategoryName)
+                .ToImmutableHashSet();
+
+            var categoryName = counterData.CounterCategory;
+
+            Validate.ArgumentCondition(
+                categories.Contains(categoryName), 
+                nameof(counterData),
+                "Unable to find counter category {0}. Available categories: {1}",
+                categoryName,
+                CounterCategoriesList);
+
+            var instanceName = counterData.InstanceResolver(process);
 
             var counter = new PerformanceCounter
             {
                 CategoryName = categoryName,
-                CounterName = counterName,
-                InstanceName = process.ProcessName
+                CounterName = counterData.CounterName,
+                InstanceName = instanceName
             };
+
+            
 
             return counter;
         }
@@ -66,7 +104,7 @@ namespace TestsHost
             {
                 var collectedData = _counters.ToImmutableDictionary(
                     kv => kv.Key, 
-                    kv => (long)(kv.Value.RawValue / CounterToMultiplier[kv.Key]));
+                    kv => (long)(CollectCounterData(kv.Value) / NameToCounter[kv.Key].Multiplier));
 
                 // here values were read successfully, so we can add all data, value read error should not prevent us
                 foreach (var performanceCounter in collectedData)
@@ -88,6 +126,19 @@ namespace TestsHost
             }
         }
 
+        private static long CollectCounterData(PerformanceCounter counter)
+        {
+            try
+            {
+                return counter.RawValue;
+            }
+            catch (Exception ex)
+            {
+                throw new InvalidOperationException(
+                    $"Unable to collect values from category '{counter.CategoryName}', name '{counter.CounterName}' and instance '{counter.InstanceName}'", ex);
+            }
+        }
+
         public ImmutableDictionary<string, double> ExtractAverageValues()
         {
             return _values.ToImmutableDictionary(kv => kv.Key, kv => kv.Value.Average());
@@ -101,11 +152,11 @@ namespace TestsHost
             }
         }
 
-        public static ImmutableList<string> CounterNames => AllCounters.Select(cn => cn.Item3).ToImmutableList();
+        public static ImmutableList<string> CounterNames => NameToCounter.Keys.ToImmutableList();
 
         public static string GetAppendix(string name)
         {
-            return CounterToAppendix[name];
+            return NameToCounter[name].Dimension;
         }
     }
 }
