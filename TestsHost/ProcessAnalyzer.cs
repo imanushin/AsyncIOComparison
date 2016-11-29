@@ -4,6 +4,7 @@ using System.Collections.Immutable;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Threading;
 using CheckContracts;
 
 namespace TestsHost
@@ -13,10 +14,10 @@ namespace TestsHost
         private static readonly string MainDiskName =
             Path.GetPathRoot(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles)).Substring(0, 2);
 
-        private static readonly ImmutableHashSet<string> CounterCategories= PerformanceCounterCategory
+        private static readonly ImmutableSortedSet<string> CounterCategories = PerformanceCounterCategory
                 .GetCategories()
                 .Select(c => c.CategoryName)
-                .ToImmutableHashSet();
+                .ToImmutableSortedSet(StringComparer.Ordinal);
 
         private static readonly string CounterCategoriesList = string.Join(", ", CounterCategories);
 
@@ -25,10 +26,10 @@ namespace TestsHost
             PerformanceCounterData.Create(".NET CLR Memory", "# Bytes in all Heaps", "Total .Net Memory", "Mb", 1e6, GetProcessName),
             PerformanceCounterData.Create(".NET CLR LocksAndThreads", "Current Queue Length", "Current lock Queue", "Length", 1d, GetProcessName),
             PerformanceCounterData.Create(".NET CLR LocksAndThreads", "# of current logical Threads", "Concurrent Threads", "", 1d, GetProcessName),
-            PerformanceCounterData.Create("LogicalDisc", "% Disk Read Time", "Disk Read Time", "", 1d, GetActiveDiskName),
-            PerformanceCounterData.Create("LogicalDisc", "Disk Read Bytes/sec", "Disk Read", "Kb / sec", 1e3, GetActiveDiskName),
-            PerformanceCounterData.Create("LogicalDisc", "Current Disk Queue Length", "Current Disk Queue", "Length", 1d, GetActiveDiskName),
-            PerformanceCounterData.Create("LogicalDisc", "Split IO/Sec", "Disk Queue Length", "Count", 1d, GetActiveDiskName),
+            PerformanceCounterData.Create("LogicalDisk", "% Disk Read Time", "Disk Read Time", "", 1d, GetActiveDiskName),
+            PerformanceCounterData.Create("LogicalDisk", "Disk Read Bytes/sec", "Disk Read", "Kb / sec", 1e3, GetActiveDiskName),
+            PerformanceCounterData.Create("LogicalDisk", "Current Disk Queue Length", "Current Disk Queue", "Length", 1d, GetActiveDiskName),
+            PerformanceCounterData.Create("LogicalDisk", "Split IO/Sec", "Disk Queue Length", "Count", 1d, GetActiveDiskName),
             PerformanceCounterData.Create("Process", "IO Read Bytes/sec", "IO Read", "KBytes/sec", 1e3, GetProcessName),
             PerformanceCounterData.Create("Process", "Page Faults/sec", "Page Faults", "Faults/sec", 1d, GetProcessName),
             PerformanceCounterData.Create("Process", "Thread Count", "Threads", "Count", 1d, GetProcessName),
@@ -69,16 +70,11 @@ namespace TestsHost
         private PerformanceCounter CreateCounter(PerformanceCounterData counterData, Process process)
         {
             Validate.ArgumentCondition(!process.HasExited, nameof(process), "Process {0} was exited", process.ProcessName);
-
-            var categories = PerformanceCounterCategory
-                .GetCategories()
-                .Select(c => c.CategoryName)
-                .ToImmutableHashSet();
-
+            
             var categoryName = counterData.CounterCategory;
 
             Validate.ArgumentCondition(
-                categories.Contains(categoryName), 
+                CounterCategories.Contains(categoryName), 
                 nameof(counterData),
                 "Unable to find counter category {0}. Available categories: {1}",
                 categoryName,
@@ -92,8 +88,6 @@ namespace TestsHost
                 CounterName = counterData.CounterName,
                 InstanceName = instanceName
             };
-
-            
 
             return counter;
         }
@@ -117,6 +111,9 @@ namespace TestsHost
             }
             catch (Exception)
             {
+                // wait a little, before check, that our process is alive
+                Thread.Sleep(TimeSpan.FromSeconds(0.3));
+
                 if (_process.HasExited)
                 {
                     return;
