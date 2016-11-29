@@ -31,6 +31,9 @@ namespace TestsHost
         private static readonly ImmutableDictionary<string, string> CounterToAppendix =
             AllCounters.ToImmutableDictionary(cn => cn.Item3, cn => cn.Item4);
 
+        private static readonly ImmutableDictionary<string, double> CounterToMultiplier =
+            AllCounters.ToImmutableDictionary(cn => cn.Item3, cn => cn.Item5);
+
         private readonly Process _process;
 
         private readonly Dictionary<string, PerformanceCounter> _counters;
@@ -61,7 +64,9 @@ namespace TestsHost
         {
             try
             {
-                var collectedData = _counters.ToImmutableDictionary(kv => kv.Key, kv => kv.Value.RawValue);
+                var collectedData = _counters.ToImmutableDictionary(
+                    kv => kv.Key, 
+                    kv => (long)(kv.Value.RawValue / CounterToMultiplier[kv.Key]));
 
                 // here values were read successfully, so we can add all data, value read error should not prevent us
                 foreach (var performanceCounter in collectedData)
@@ -72,7 +77,7 @@ namespace TestsHost
                     _values[name].Add(counterValue);
                 }
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 if (_process.HasExited)
                 {

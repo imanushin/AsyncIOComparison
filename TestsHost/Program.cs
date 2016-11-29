@@ -20,7 +20,7 @@ namespace TestsHost
 #endif
 
 #if DEBUG
-       private static readonly int FilesCount = 1000;
+       private static readonly int FilesCount = 10000;
 #else
         private static readonly int FilesCount = 10000;
 #endif
