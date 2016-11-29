@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Linq;
+using CheckContracts;
 
 namespace TestsHost
 {
@@ -30,17 +31,22 @@ namespace TestsHost
         private static readonly ImmutableDictionary<string, string> CounterToAppendix =
             AllCounters.ToImmutableDictionary(cn => cn.Item3, cn => cn.Item4);
 
+        private readonly Process _process;
+
         private readonly Dictionary<string, PerformanceCounter> _counters;
         private readonly Dictionary<string, List<long>> _values;
 
         public ProcessAnalyzer(Process process)
         {
+            _process = process;
             _counters = AllCounters.ToDictionary(cn => cn.Item3, cn => CreateCounter(cn.Item1, cn.Item2, process));
             _values = _counters.Keys.ToDictionary(c => c, c => new List<long>());
         }
 
         private PerformanceCounter CreateCounter(string categoryName, string counterName, Process process)
         {
+            Validate.ArgumentCondition(!process.HasExited, nameof(process), "Process {0} was exited", process.ProcessName);
+
             var counter = new PerformanceCounter
             {
                 CategoryName = categoryName,
@@ -53,12 +59,27 @@ namespace TestsHost
 
         public void Collect()
         {
-            foreach (var performanceCounter in _counters)
+            try
             {
-                var counter = performanceCounter.Value;
-                var name = performanceCounter.Key;
+                var collectedData = _counters.ToImmutableDictionary(kv => kv.Key, kv => kv.Value.RawValue);
 
-                _values[name].Add(counter.RawValue);
+                // here values were read successfully, so we can add all data, value read error should not prevent us
+                foreach (var performanceCounter in collectedData)
+                {
+                    var counterValue = performanceCounter.Value;
+                    var name = performanceCounter.Key;
+
+                    _values[name].Add(counterValue);
+                }
+            }
+            catch (Exception ex)
+            {
+                if (_process.HasExited)
+                {
+                    return;
+                }
+
+                throw;
             }
         }
 
