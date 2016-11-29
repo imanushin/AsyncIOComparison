@@ -13,8 +13,8 @@ namespace TestsHost
 {
     internal static class Program
     {
-        private static readonly int FilesCount = 10000;
         private const int AttemptsCount = 5;
+        private static readonly int FilesCount = 10000;
 
         public static int Main()
         {
@@ -79,7 +79,15 @@ namespace TestsHost
             await resultsStream.WriteLineAsync($"*Min size (bytes): {minSize} bytes, max size (bytes): {maxSize}, average size (bytes): {avgSize}*").ConfigureAwait(false);
             await resultsStream.WriteLineAsync().ConfigureAwait(false);
 
-            await resultsStream.WriteLineAsync("| Scenario | Time | CPU usage (%) | Memory usage (Mb) | Was failed |").ConfigureAwait(false);
+            await resultsStream.WriteAsync("| Scenario | Time ").ConfigureAwait(false);
+
+            foreach (var counterName in ProcessAnalyzer.CounterNames)
+            {
+                await resultsStream.WriteAsync($"| {counterName} {ProcessAnalyzer.GetAppendix(counterName)} ").ConfigureAwait(false);
+            }
+
+            await resultsStream.WriteLineAsync("| Was failed |").ConfigureAwait(false);
+
             await resultsStream.WriteLineAsync("| -------- | -------- | -------- | -------- | -------- |").ConfigureAwait(false);
 
             var exeFileName = Process.GetCurrentProcess().MainModule.FileName;
@@ -116,11 +124,13 @@ namespace TestsHost
                 var multipleRunResults = Enumerable.Repeat(true, AttemptsCount).Select(_ => CheckScenario(scenario, arguments)).ToImmutableList();
 
                 var aggregatedResult = AggregateResult(multipleRunResults);
-                var testResult = CheckScenario(scenario, arguments);
+                var counterValues = string.Join(" | ",
+                    aggregatedResult.CounterValues.Values.Select(d => d.Avg.ToString("F")));
 
-                await resultsStream.WriteLineAsync($"| {scenario} | {aggregatedResult.ExecutionTime} | {aggregatedResult.AverageProcessorTime} | {aggregatedResult.AverageMemoryUsage / 10000000} | {aggregatedResult.WasFailed} |").ConfigureAwait(false);
+                await resultsStream.WriteLineAsync($"| {scenario} | {aggregatedResult.ExecutionTime} | {counterValues} | {aggregatedResult.WasFailed} |").ConfigureAwait(false);
 
-                await WriteScenarioResultsAsync(testResult, scenario).ConfigureAwait(false);
+                await WriteScenarioResultsAsync(aggregatedResult, scenario).ConfigureAwait(false);
+                await resultsStream.FlushAsync().ConfigureAwait(false);
             }
 
             await resultsStream.WriteLineAsync().ConfigureAwait(false);
@@ -132,44 +142,51 @@ namespace TestsHost
         {
             if (multipleRunResults.Any(r => r.ExitResult != ExitResult.Ok))
             {
-                return new MultipleExecutionResult(TimeSpan.Zero, 0, 0, true);
+                return new MultipleExecutionResult(TimeSpan.Zero, ImmutableDictionary<string, AggregatedValue>.Empty, true);
             }
 
-            var averageTime = TimeSpan.FromMilliseconds(multipleRunResults.Average(r => r.Data.ExecutionTime.TotalMilliseconds));
-            var averageCpu = multipleRunResults.Average(r => r.ProcessorTime.Average());
-            var averageMem = multipleRunResults.Average(r => r.MemoryUsage.Average());
+            var averageTime =
+                TimeSpan.FromMilliseconds(
+                    AggregatedValue.Create(
+                        multipleRunResults.Select(r => (double)r.Data.ExecutionTime.Milliseconds).ToImmutableList()).Avg);
 
-            return new MultipleExecutionResult(averageTime, averageCpu, averageMem, false);
+            var aggregatedCounters = ProcessAnalyzer.CounterNames.ToImmutableDictionary(
+                cn => cn,
+                cn => multipleRunResults.Select(r => r.CounterToValue[cn]).ToImmutableList());
+
+            var medianCounters = GetMedianValues(aggregatedCounters);
+
+            return new MultipleExecutionResult(averageTime, medianCounters, false);
         }
 
-        private static async Task WriteScenarioResultsAsync(TestResult testResult, string scenario)
+        private static ImmutableDictionary<string, AggregatedValue> GetMedianValues(ImmutableDictionary<string, ImmutableList<double>> multipleRun)
         {
-            var result = testResult.Data;
-            var cpuData = GetMinAvgMax(testResult.ProcessorTime);
-            var memData = GetMinAvgMax(testResult.MemoryUsage);
+            return multipleRun.ToImmutableDictionary(kv => kv.Key, kv => AggregatedValue.Create(kv.Value));
+        }
 
-            if (testResult.ExitResult != ExitResult.Ok)
+        private static async Task WriteScenarioResultsAsync(MultipleExecutionResult testResult, string scenario)
+        {
+            if (testResult.WasFailed)
             {
-                await
-                    Console.Out.WriteLineAsync($"{scenario} - failed with {testResult.ExitResult} error")
-                        .ConfigureAwait(false);
+                await Console.Out.WriteLineAsync($"{scenario} - some tests were failed").ConfigureAwait(false);
             }
             else
             {
-                await
-                    Console.Out.WriteLineAsync(
-                        $"{scenario} - {result.ExecutionTime.TotalSeconds} secs; cpu - {cpuData}, memory - {memData}")
-                        .ConfigureAwait(false);
+                await Console.Out.WriteAsync($"{scenario} - {testResult.ExecutionTime} secs; ").ConfigureAwait(false);
+
+                foreach (var aggregatedCounter in testResult.CounterValues)
+                {
+                    var name = aggregatedCounter.Key;
+                    var min = aggregatedCounter.Value.Min;
+                    var avg = aggregatedCounter.Value.Avg;
+                    var max = aggregatedCounter.Value.Max;
+                    var appendix = ProcessAnalyzer.GetAppendix(aggregatedCounter.Key);
+
+                    await Console.Out.WriteAsync($"{name} - {min}/{avg}/{max} {appendix} ").ConfigureAwait(false);
+                }
+
+                await Console.Out.WriteLineAsync().ConfigureAwait(false);
             }
-        }
-
-        private static string GetMinAvgMax(ImmutableList<float> data)
-        {
-            var min = data.Min();
-            var max = data.Max();
-            var avg = data.Average();
-
-            return $"{min}/{avg}/{max}";
         }
 
         private static TestResult CheckScenario(string scenarioName, Arguments arguments)
@@ -190,31 +207,27 @@ namespace TestsHost
             {
                 Validate.IsNotNull(process);
 
-                var theCpuCounter = new PerformanceCounter("Process", "% Processor Time", process.ProcessName);
-                var theMemCounter = new PerformanceCounter("Process", "Working Set", process.ProcessName);
-
-                var cpuValues = new List<float>();
-                var memValues = new List<float>();
-
-                Thread.Sleep(500);
-
-                while (!process.HasExited)
+                using (var processAnalyzer = new ProcessAnalyzer(process))
                 {
-                    cpuValues.Add(theCpuCounter.NextValue());
-                    memValues.Add(theMemCounter.NextValue());
+                    Thread.Sleep(500);
 
-                    Thread.Sleep(1000);
+                    while (!process.HasExited)
+                    {
+                        processAnalyzer.Collect();
+
+                        Thread.Sleep(1000);
+                    }
+
+                    process.WaitForExit();
+
+                    var exitResult = GetExitResult(arguments, process);
+
+                    var data = exitResult == ExitResult.Ok
+                        ? Serialization.LoadObjectAsync<ResultsData>(arguments.PathToResults).Result
+                        : null;
+
+                    return new TestResult(exitResult, data, processAnalyzer.ExtractAverageValues());
                 }
-
-                process.WaitForExit();
-
-                var exitResult = GetExitResult(arguments, process);
-
-                var data = exitResult == ExitResult.Ok
-                    ? Serialization.LoadObjectAsync<ResultsData>(arguments.PathToResults).Result
-                    : null;
-
-                return new TestResult(exitResult, data, cpuValues.ToImmutableList(), memValues.ToImmutableList());
             }
         }
 

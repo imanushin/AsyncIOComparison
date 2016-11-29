@@ -5,20 +5,17 @@ namespace TestsHost
 {
     internal sealed class TestResult
     {
-        public TestResult(ExitResult exitResult, ResultsData data, ImmutableList<float> processorTime, ImmutableList<float> memoryUsage)
+        public TestResult(ExitResult exitResult, ResultsData data, ImmutableDictionary<string, double> counterToValue)
         {
             ExitResult = exitResult;
             Data = data;
-            ProcessorTime = processorTime;
-            MemoryUsage = memoryUsage;
+            CounterToValue = counterToValue;
         }
 
         public ExitResult ExitResult { get; }
 
         public ResultsData Data { get; }
 
-        public ImmutableList<float> ProcessorTime { get; }
-
-        public ImmutableList<float> MemoryUsage { get; }
+        public ImmutableDictionary<string, double> CounterToValue { get; }
     }
 }

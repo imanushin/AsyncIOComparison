@@ -53,9 +53,11 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AggregatedValue.cs" />
     <Compile Include="ExitResult.cs" />
     <Compile Include="FilesLookup.cs" />
     <Compile Include="MultipleExecutionResult.cs" />
+    <Compile Include="ProcessAnalyzer.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="TestResult.cs" />

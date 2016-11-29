@@ -1,4 +1,7 @@
-﻿using System;
+﻿
+
+using System;
+using System.Collections.Immutable;
 
 namespace TestsHost
 {
@@ -6,22 +9,19 @@ namespace TestsHost
     {
         public MultipleExecutionResult(
             TimeSpan executionTime,
-            float averageProcessorTime,
-            float averageMemoryUsage, 
+            ImmutableDictionary<string, AggregatedValue> counterValues,
             bool wasFailed)
         {
             ExecutionTime = executionTime;
-            AverageProcessorTime = averageProcessorTime;
-            AverageMemoryUsage = averageMemoryUsage;
+            CounterValues = counterValues;
             WasFailed = wasFailed;
         }
 
         public TimeSpan ExecutionTime { get; }
 
-        public float AverageProcessorTime { get; }
-
-        public float AverageMemoryUsage { get; }
+        public ImmutableDictionary<string, AggregatedValue> CounterValues { get; }
 
         public bool WasFailed { get; }
     }
 }
+
