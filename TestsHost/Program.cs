@@ -13,8 +13,17 @@ namespace TestsHost
 {
     internal static class Program
     {
-        private const int AttemptsCount = 5;
+#if DEBUG
+        private const int AttemptsCount = 3;
+#else
+        private const int AttemptsCount = 7;
+#endif
+
+#if DEBUG
+       private static readonly int FilesCount = 100;
+#else
         private static readonly int FilesCount = 10000;
+#endif
 
         public static int Main()
         {
