@@ -6,11 +6,14 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using CheckContracts;
+using NLog;
 
 namespace TestsHost
 {
     internal sealed class ProcessAnalyzer : IDisposable
     {
+        private static readonly ILogger Log = LogManager.GetCurrentClassLogger();
+
         private static readonly string MainDiskName =
             Path.GetPathRoot(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles)).Substring(0, 2);
 
@@ -109,17 +112,9 @@ namespace TestsHost
                     _values[name].Add(counterValue);
                 }
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                // wait a little, before check, that our process is alive
-                Thread.Sleep(TimeSpan.FromSeconds(0.3));
-
-                if (_process.HasExited)
-                {
-                    return;
-                }
-
-                throw;
+                Log.Warn(ex, "Unable to collect data for process {0}", _process.ProcessName);
             }
         }
 

@@ -4,15 +4,21 @@ using System.Collections.Immutable;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using CheckContracts;
 using IntermediateData;
+using NLog;
+using NLog.Config;
+using NLog.Targets;
 
 namespace TestsHost
 {
     internal static class Program
     {
+        private static readonly ILogger Log = LogManager.GetCurrentClassLogger();
+
 #if DEBUG
         private const int AttemptsCount = 3;
 #else
@@ -20,22 +26,36 @@ namespace TestsHost
 #endif
 
 #if DEBUG
-       private static readonly int FilesCount = 10000;
+        private static readonly int FilesCount = 10000;
 #else
         private static readonly int FilesCount = 10000;
 #endif
 
+        private static void InitLogging()
+        {
+            var config = new LoggingConfiguration();
+
+            var consoleTarget = new ConsoleTarget("console");
+            var fileTarget = new FileTarget("file") { FileName = "testhost_" + DateTime.UtcNow.Ticks };
+
+            config.AddTarget(consoleTarget);
+            config.AddTarget(fileTarget);
+
+            config.AddRuleForAllLevels(consoleTarget);
+            config.AddRuleForAllLevels(fileTarget);
+
+            LogManager.Configuration = config;
+        }
+
         public static int Main()
         {
-            Trace.Listeners.Add(new ConsoleTraceListener());
-
             try
             {
                 MainAsync().Wait();
             }
             catch (Exception ex)
             {
-                Trace.TraceError("Unhandled exception: {0}", ex);
+                Log.Error(ex, "Unhandled exception");
 
                 return -1;
             }
@@ -45,6 +65,8 @@ namespace TestsHost
 
         private static async Task MainAsync()
         {
+            InitLogging();
+
             var outDir = Environment.CurrentDirectory;
             var outFile = Path.Combine(outDir, "results_") + DateTime.UtcNow.Ticks + ".md";
 
@@ -64,7 +86,7 @@ namespace TestsHost
 
                     await resultsStream.FlushAsync().ConfigureAwait(false);
                     await resultsFile.FlushAsync().ConfigureAwait(false);
-                    await Console.Out.WriteLineAsync("Tests done").ConfigureAwait(false);
+                    Log.Info("Tests done");
                 }
             }
         }
@@ -82,8 +104,7 @@ namespace TestsHost
             var maxSize = filesToTest.Select(f => f.Length).Max();
             var avgSize = filesToTest.Select(f => f.Length).Average();
 
-            await Console.Out.WriteLineAsync($"Files to test: {filesToTest.Count}, min size - {minSize} bytes, max size - {maxSize}, average size - {avgSize}").ConfigureAwait(false);
-            await Console.Out.WriteLineAsync().ConfigureAwait(false);
+            Log.Info($"Files to test: {filesToTest.Count}, min size - {minSize} bytes, max size - {maxSize}, average size - {avgSize}");
 
             await resultsStream.WriteLineAsync($"*Min size (bytes): {minSize} bytes, max size (bytes): {maxSize}, average size (bytes): {avgSize}*").ConfigureAwait(false);
             await resultsStream.WriteLineAsync().ConfigureAwait(false);
@@ -138,13 +159,11 @@ namespace TestsHost
 
                 await resultsStream.WriteLineAsync($"| {scenario} | {aggregatedResult.ExecutionTime} | {counterValues} | {aggregatedResult.WasFailed} |").ConfigureAwait(false);
 
-                await WriteScenarioResultsAsync(aggregatedResult, scenario).ConfigureAwait(false);
+                WriteScenarioResults(aggregatedResult, scenario);
                 await resultsStream.FlushAsync().ConfigureAwait(false);
             }
 
             await resultsStream.WriteLineAsync().ConfigureAwait(false);
-
-            await Console.Out.WriteLineAsync().ConfigureAwait(false);
         }
 
         private static MultipleExecutionResult AggregateResult(ImmutableList<TestResult> multipleRunResults)
@@ -173,15 +192,16 @@ namespace TestsHost
             return multipleRun.ToImmutableDictionary(kv => kv.Key, kv => AggregatedValue.Create(kv.Value));
         }
 
-        private static async Task WriteScenarioResultsAsync(MultipleExecutionResult testResult, string scenario)
+        private static void WriteScenarioResults(MultipleExecutionResult testResult, string scenario)
         {
             if (testResult.WasFailed)
             {
-                await Console.Out.WriteLineAsync($"{scenario} - some tests were failed").ConfigureAwait(false);
+                Log.Info($"{scenario} - some tests were failed");
             }
             else
             {
-                await Console.Out.WriteAsync($"{scenario} - {testResult.ExecutionTime} secs; ").ConfigureAwait(false);
+                var logOutput = new StringBuilder();
+                logOutput.Append($"{scenario} - {testResult.ExecutionTime} secs; ");
 
                 foreach (var aggregatedCounter in testResult.CounterValues)
                 {
@@ -191,10 +211,10 @@ namespace TestsHost
                     var max = aggregatedCounter.Value.Max;
                     var appendix = ProcessAnalyzer.GetAppendix(aggregatedCounter.Key);
 
-                    await Console.Out.WriteAsync($"{name} - {min}/{avg}/{max} {appendix} ").ConfigureAwait(false);
+                    logOutput.AppendLine($"{name} - {min}/{avg}/{max} {appendix} ");
                 }
 
-                await Console.Out.WriteLineAsync().ConfigureAwait(false);
+                Log.Info(logOutput);
             }
         }
 
