@@ -11,12 +11,14 @@ using CheckContracts;
 using IntermediateData;
 using NLog;
 using NLog.Config;
+using NLog.Layouts;
 using NLog.Targets;
 
 namespace TestsHost
 {
     internal static class Program
     {
+        private static readonly SimpleLayout NLogLayout = new SimpleLayout("${longdate}|${level:uppercase=true}|${logger}|${message}|${exception:format=ToString}");
         private static readonly ILogger Log = LogManager.GetCurrentClassLogger();
 
 #if DEBUG
@@ -35,8 +37,8 @@ namespace TestsHost
         {
             var config = new LoggingConfiguration();
 
-            var consoleTarget = new ConsoleTarget("console");
-            var fileTarget = new FileTarget("file") { FileName = "testhost_" + DateTime.UtcNow.Ticks };
+            var consoleTarget = new ConsoleTarget("console") { Layout = NLogLayout };
+            var fileTarget = new FileTarget("file") { FileName = "testhost_" + DateTime.UtcNow.Ticks + ".txt", Layout = NLogLayout };
 
             config.AddTarget(consoleTarget);
             config.AddTarget(fileTarget);
@@ -57,8 +59,12 @@ namespace TestsHost
             {
                 Log.Error(ex, "Unhandled exception");
 
+                LogManager.Configuration = null;
+
                 return -1;
             }
+
+            LogManager.Configuration = null;
 
             return 0;
         }

@@ -8,6 +8,9 @@ namespace TestsHost
 {
     internal static class FilesLookup
     {
+        private static readonly ImmutableList<string> RestrictedSubstrings =
+            ImmutableList.Create("WINDOWS\\SoftwareDistribution", "WINDOWS\\System32\\igfxCoIn", "NlbMigPlugin", "msoobedui", "PowerWmiProvider");
+        
         private static readonly ImmutableList<DirectoryInfo> RootFolders = GetRootFolderCandidates()
             .Where(Directory.Exists)
             .Select(dn => new DirectoryInfo(dn))
@@ -30,11 +33,10 @@ namespace TestsHost
 
         private static IEnumerable<FileInfo> GetFiles(string path, int minLength = 0)
         {
-
             foreach (var file in GetFilesSafe(path)
                     .AsParallel()
                     .Select(f => new FileInfo(f))
-                    .Where(f => f.Exists && f.Length > minLength)
+                    .Where(f => IsAllowedFile(f) && f.Length > minLength)
                     .Where(CanBeOpened))
             {
                 yield return file;
@@ -47,6 +49,11 @@ namespace TestsHost
                     yield return file;
                 }
             }
+        }
+
+        private static bool IsAllowedFile(FileInfo file)
+        {
+            return file.Exists && !RestrictedSubstrings.Any(subPath => file.FullName.IndexOf(subPath, StringComparison.OrdinalIgnoreCase) >= 0);
         }
 
         private static string[] GetDirectoriesSafe(string path)
