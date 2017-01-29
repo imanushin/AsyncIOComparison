@@ -20,6 +20,20 @@ namespace TestsHost
     {
         private static readonly SimpleLayout NLogLayout = new SimpleLayout("${longdate}|${level:uppercase=true}|${logger}|${message}|${exception:format=ToString}");
         private static readonly ILogger Log = LogManager.GetCurrentClassLogger();
+        
+        private static readonly ImmutableList<string> ScenarioNames = ImmutableList.Create(
+            "ScenarioAsyncWithMaxParallelCount4",
+            "ScenarioAsyncWithMaxParallelCount8",
+            "ScenarioAsyncWithMaxParallelCount16",
+            "ScenarioAsyncWithMaxParallelCount32",
+            "ScenarioAsyncWithMaxParallelCount64",
+            "ScenarioAsyncWithMaxParallelCount128",
+            "ScenarioAsyncWithMaxParallelCount256",
+            "ScenarioSyncAsParallel",
+            "ScenarioReadAllAsParallel",
+            "ScenarioAsync",
+            "ScenarioAsync2",
+            "ScenarioNewThread");
 
 #if DEBUG
         private const int AttemptsCount = 3;
@@ -83,7 +97,7 @@ namespace TestsHost
                     await resultsStream.WriteLineAsync($"**Check {FilesCount} files to read**").ConfigureAwait(false);
                     await resultsStream.WriteLineAsync("").ConfigureAwait(false);
 
-                    foreach (var sizeDegree in new[] { 0, 3, 5, 6, 7, 8, 9 })
+                    foreach (var sizeDegree in new[] { 0, 3, 4, 5, 6 })
                     {
                         var size = (int)Math.Pow(10, sizeDegree);
 
@@ -139,27 +153,20 @@ namespace TestsHost
 
             var arguments = new Arguments(filesListFile, testResultsFilePath);
 
-            var scenarios = ImmutableList.Create(
-                "ScenarioAsyncWithMaxParallelCount4",
-                "ScenarioAsyncWithMaxParallelCount8",
-                "ScenarioAsyncWithMaxParallelCount16",
-                "ScenarioAsyncWithMaxParallelCount32",
-                "ScenarioAsyncWithMaxParallelCount64",
-                "ScenarioAsyncWithMaxParallelCount128",
-                "ScenarioAsyncWithMaxParallelCount256",
-                "ScenarioSyncAsParallel",
-                "ScenarioReadAllAsParallel",
-                "ScenarioAsync",
-                "ScenarioAsync2",
-                "ScenarioNewThread");
+            await CheckScenarioAsync("ScenarioAsync", arguments).ConfigureAwait(false); //warm system io caches
 
-            CheckScenario("ScenarioAsync", arguments); //warm system io caches
-
-            foreach (var scenario in scenarios)
+            foreach (var scenario in ScenarioNames)
             {
-                var multipleRunResults = Enumerable.Repeat(true, AttemptsCount).Select(_ => CheckScenario(scenario, arguments)).ToImmutableList();
+                var runResults = new List<TestResult>();
 
-                var aggregatedResult = AggregateResult(multipleRunResults);
+                foreach (var _ in Enumerable.Repeat(true, AttemptsCount))
+                {
+                    var result = await CheckScenarioAsync(scenario, arguments).ConfigureAwait(false);
+
+                    runResults.Add(result);
+                }
+
+                var aggregatedResult = AggregateResult(runResults.ToImmutableList());
                 var counterValues = string.Join(" | ",
                     aggregatedResult.CounterValues.Values.Select(d => d.Avg.ToString("F")));
 
@@ -224,7 +231,7 @@ namespace TestsHost
             }
         }
 
-        private static TestResult CheckScenario(string scenarioName, Arguments arguments)
+        private static async Task<TestResult> CheckScenarioAsync(string scenarioName, Arguments arguments)
         {
             var currentFolder = Path.GetDirectoryName(arguments.PathToFilesList);
             Validate.StringIsMeanful(currentFolder);
@@ -244,13 +251,13 @@ namespace TestsHost
 
                 using (var processAnalyzer = new ProcessAnalyzer(process))
                 {
-                    Thread.Sleep(500);
+                    await Task.Delay(500).ConfigureAwait(false);
 
                     while (!process.HasExited)
                     {
                         processAnalyzer.Collect();
 
-                        Thread.Sleep(1000);
+                        await Task.Delay(1000).ConfigureAwait(false);
                     }
 
                     process.WaitForExit();
@@ -261,7 +268,9 @@ namespace TestsHost
                         ? Serialization.LoadObjectAsync<ResultsData>(arguments.PathToResults).Result
                         : null;
 
-                    return new TestResult(exitResult, data, processAnalyzer.ExtractAverageValues());
+                    var runResults = processAnalyzer.ExtractAverageValues();
+
+                    return new TestResult(exitResult, data, runResults);
                 }
             }
         }

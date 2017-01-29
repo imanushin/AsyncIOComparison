@@ -133,7 +133,17 @@ namespace TestsHost
 
         public ImmutableDictionary<string, double> ExtractAverageValues()
         {
-            return _values.ToImmutableDictionary(kv => kv.Key, kv => kv.Value.Average());
+            return _values.ToImmutableDictionary(kv => kv.Key, kv => GetAverage(kv.Value));
+        }
+
+        private static double GetAverage(List<long> values)
+        {
+            if (!values.Any())
+            {
+                return 0;
+            }
+
+            return values.Average();
         }
 
         public void Dispose()

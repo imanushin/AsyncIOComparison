@@ -25,7 +25,15 @@ namespace TestsHost
 
         public static AggregatedValue Create(ImmutableList<double> values)
         {
-            var sortedValues = values.Sort();
+            var clearedValues = values.Where(v => v > double.Epsilon).ToImmutableList();
+
+            if (clearedValues.Count < 3)
+            {
+                return new AggregatedValue(0, 0, 0);
+            }
+
+            var sortedValues = clearedValues.Sort();
+
             var withoutSlowAndFast =
                 sortedValues.Skip(IgnoredResults).Take(sortedValues.Count - IgnoredResults * 2).ToImmutableList();
 
