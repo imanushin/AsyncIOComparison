@@ -1,22 +1,5 @@
 **Check 10000 files to read**
 
-*Min size (bytes): 3 bytes, max size (bytes): 54989002, average size (bytes): 210100,5686*
-
-| Scenario | Time | IO Read KBytes/sec | Current Disk Queue Length | Page Faults Faults/sec | Disk Queue Length Count | Total .Net Memory Mb | Concurrent Threads  | Current lock Queue Length | Available MBytes Mb | Disk Read Kb / sec | Disk Read Time  | CPU Load % | Threads Count | Was failed |
-| -------- | -------- | -------- | -------- | -------- |
-| ScenarioAsyncWithMaxParallelCount4 | 00:00:00 |  | True |
-| ScenarioAsyncWithMaxParallelCount8 | 00:00:00 |  | True |
-| ScenarioAsyncWithMaxParallelCount16 | 00:00:00 |  | True |
-| ScenarioAsyncWithMaxParallelCount32 | 00:00:00 |  | True |
-| ScenarioAsyncWithMaxParallelCount64 | 00:00:00 |  | True |
-| ScenarioAsyncWithMaxParallelCount128 | 00:00:00 |  | True |
-| ScenarioAsyncWithMaxParallelCount256 | 00:00:00 |  | True |
-| ScenarioSyncAsParallel | 00:00:00 |  | True |
-| ScenarioReadAllAsParallel | 00:00:00 |  | True |
-| ScenarioAsync | 00:00:00 |  | True |
-| ScenarioAsync2 | 00:00:00 |  | True |
-| ScenarioNewThread | 00:00:00 |  | True |
-
 *Min size (bytes): 1001 bytes, max size (bytes): 54989002, average size (bytes): 210818,0652*
 
 | Scenario | Time | IO Read KBytes/sec | Current Disk Queue Length | Page Faults Faults/sec | Disk Queue Length Count | Total .Net Memory Mb | Concurrent Threads  | Current lock Queue Length | Available MBytes Mb | Disk Read Kb / sec | Disk Read Time  | CPU Load % | Threads Count | Was failed |
@@ -42,14 +25,6 @@
 | ScenarioAsyncWithMaxParallelCount8 | 00:00:00.4770000 | 2248281,64 | 7,35 | 729369,93 | 451558,76 | 143,38 | 19,33 | 1,00 | 2351,31 | 636627943,56 | 8119762954634,72 | 247038767,51 | 24,56 | False |
 | ScenarioAsyncWithMaxParallelCount16 | 00:00:00.5970000 | 2229082,38 | 13,55 | 671606,86 | 484978,24 | 189,16 | 26,48 | 1,00 | 2269,98 | 663396712,10 | 8294416011757,20 | 250439169,87 | 31,80 | False |
 | ScenarioAsyncWithMaxParallelCount32 | 00:00:00.5060000 | 2189273,57 | 20,64 | 627586,74 | 522116,57 | 245,60 | 35,71 | 1,00 | 2085,93 | 690223471,35 | 8605456140363,62 | 212335215,47 | 40,82 | False |
-| ScenarioAsyncWithMaxParallelCount64 | 00:00:00 |  | True |
-| ScenarioAsyncWithMaxParallelCount128 | 00:00:00 |  | True |
-| ScenarioAsyncWithMaxParallelCount256 | 00:00:00 |  | True |
-| ScenarioSyncAsParallel | 00:00:00 |  | True |
-| ScenarioReadAllAsParallel | 00:00:00 |  | True |
-| ScenarioAsync | 00:00:00 |  | True |
-| ScenarioAsync2 | 00:00:00 |  | True |
-| ScenarioNewThread | 00:00:00 |  | True |
 
 *Min size (bytes): 100072 bytes, max size (bytes): 135657872, average size (bytes): 969049,0894*
 
