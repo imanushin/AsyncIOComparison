@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 14
-VisualStudioVersion = 14.0.24720.0
+# Visual Studio 15
+VisualStudioVersion = 15.0.26228.9
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestsHost", "TestsHost\TestsHost.csproj", "{8B8E8509-4477-49CE-BC83-038C2AAF2277}"
 	ProjectSection(ProjectDependencies) = postProject
@@ -47,16 +47,19 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ScenarioAsyncWithMaxParalle
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ScenarioAsyncWithMaxParallelCount256", "ScenarioAsyncWithMaxParallelCount256\ScenarioAsyncWithMaxParallelCount256.csproj", "{DDFDF01C-A8B8-4183-89A7-EEC32BA93272}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ScenarioAsyncWithMaxParallelCount24", "ScenarioAsyncWithMaxParallelCount24\ScenarioAsyncWithMaxParallelCount24.csproj", "{545907E4-EA28-4778-A9C9-E1F4ED06D89F}"
+EndProject
 Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
-		ScenarioAsyncWithMaxParallelCount\ScenarioAsyncWithMaxParallelCount.projitems*{6c22715b-49f6-4a38-9023-b0e3c2bb31c1}*SharedItemsImports = 4
 		ScenarioAsyncWithMaxParallelCount\ScenarioAsyncWithMaxParallelCount.projitems*{27debab3-c10d-433e-9980-7112fb927a20}*SharedItemsImports = 4
-		ScenarioAsyncWithMaxParallelCount\ScenarioAsyncWithMaxParallelCount.projitems*{ddfdf01c-a8b8-4183-89a7-eec32ba93272}*SharedItemsImports = 4
-		ScenarioAsyncWithMaxParallelCount\ScenarioAsyncWithMaxParallelCount.projitems*{84bdbf08-1dc4-4a9c-bbbd-21e7aa50ee2e}*SharedItemsImports = 4
 		ScenarioAsyncWithMaxParallelCount\ScenarioAsyncWithMaxParallelCount.projitems*{380ad270-985d-41ee-93d3-559643cc4ac0}*SharedItemsImports = 4
+		ScenarioAsyncWithMaxParallelCount\ScenarioAsyncWithMaxParallelCount.projitems*{545907e4-ea28-4778-a9c9-e1f4ed06d89f}*SharedItemsImports = 4
+		ScenarioAsyncWithMaxParallelCount\ScenarioAsyncWithMaxParallelCount.projitems*{6c22715b-49f6-4a38-9023-b0e3c2bb31c1}*SharedItemsImports = 4
 		ScenarioAsyncWithMaxParallelCount\ScenarioAsyncWithMaxParallelCount.projitems*{71dab955-3cb5-4eaa-bc80-7b204f513078}*SharedItemsImports = 13
-		ScenarioAsyncWithMaxParallelCount\ScenarioAsyncWithMaxParallelCount.projitems*{cc8d64b8-9882-4f72-97fb-6a6f91e76b89}*SharedItemsImports = 4
+		ScenarioAsyncWithMaxParallelCount\ScenarioAsyncWithMaxParallelCount.projitems*{84bdbf08-1dc4-4a9c-bbbd-21e7aa50ee2e}*SharedItemsImports = 4
 		ScenarioAsyncWithMaxParallelCount\ScenarioAsyncWithMaxParallelCount.projitems*{8bbee860-8dac-41ab-8581-44df425d492d}*SharedItemsImports = 4
+		ScenarioAsyncWithMaxParallelCount\ScenarioAsyncWithMaxParallelCount.projitems*{cc8d64b8-9882-4f72-97fb-6a6f91e76b89}*SharedItemsImports = 4
+		ScenarioAsyncWithMaxParallelCount\ScenarioAsyncWithMaxParallelCount.projitems*{ddfdf01c-a8b8-4183-89a7-eec32ba93272}*SharedItemsImports = 4
 	EndGlobalSection
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -119,6 +122,10 @@ Global
 		{DDFDF01C-A8B8-4183-89A7-EEC32BA93272}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{DDFDF01C-A8B8-4183-89A7-EEC32BA93272}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{DDFDF01C-A8B8-4183-89A7-EEC32BA93272}.Release|Any CPU.Build.0 = Release|Any CPU
+		{545907E4-EA28-4778-A9C9-E1F4ED06D89F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{545907E4-EA28-4778-A9C9-E1F4ED06D89F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{545907E4-EA28-4778-A9C9-E1F4ED06D89F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{545907E4-EA28-4778-A9C9-E1F4ED06D89F}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

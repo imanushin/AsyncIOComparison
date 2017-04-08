@@ -20,6 +20,9 @@ namespace ScenarioAsync2
 #if MAX_PARALLEL_16
         private const int MaxParallelReads = 16;
 #else
+#if MAX_PARALLEL_24
+        private const int MaxParallelReads = 24;
+#else
 #if MAX_PARALLEL_32
         private const int MaxParallelReads = 32;
 #else
@@ -30,6 +33,7 @@ namespace ScenarioAsync2
         private const int MaxParallelReads = 128;
 #else
         private const int MaxParallelReads = 256;
+#endif
 #endif
 #endif
 #endif

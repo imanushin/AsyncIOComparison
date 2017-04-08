@@ -25,6 +25,7 @@ namespace TestsHost
             "ScenarioAsyncWithMaxParallelCount4",
             "ScenarioAsyncWithMaxParallelCount8",
             "ScenarioAsyncWithMaxParallelCount16",
+            "ScenarioAsyncWithMaxParallelCount24",
             "ScenarioAsyncWithMaxParallelCount32",
             "ScenarioAsyncWithMaxParallelCount64",
             "ScenarioAsyncWithMaxParallelCount128",
